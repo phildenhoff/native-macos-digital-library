@@ -11,12 +11,12 @@ struct CalibreBook {
   let orderInSeries: Int
 }
 
-func buildMetadataDbUrl(libraryUrl: URL) -> URL {
+private func buildMetadataDbUrl(libraryUrl: URL) -> URL {
   let metadataPath = libraryUrl.appending(path: "/metadata.db")
   return metadataPath
 }
 
-func calibreBookFromRow(statement: OpaquePointer, columnIndexByName: [String: Int32])
+private func calibreBookFromRow(statement: OpaquePointer, columnIndexByName: [String: Int32])
   -> CalibreBook?
 {
   if let idIndex = columnIndexByName["id"],
