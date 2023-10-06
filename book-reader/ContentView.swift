@@ -98,7 +98,6 @@ struct ContentView: View {
     return openPanel.begin { (result) -> Void in
       if result == NSApplication.ModalResponse.OK {
         if let calibreLibraryUrl = openPanel.url {
-          print("calibreLibraryPath", calibreLibraryUrl)
           readLibraryMetadata(libraryUrl: calibreLibraryUrl)
         }
       }
@@ -107,7 +106,6 @@ struct ContentView: View {
 
   func readLibraryMetadata(libraryUrl: URL) {
     let calibreLibraryPath = libraryUrl
-    // let calibreLibraryPath = URL(filePath: "/Users/phil/dev/macos-book-app/sample-library/")
     let calibreBookList = readBooksFromCalibreDb(libraryUrl: calibreLibraryPath)
     let newBooks: [Book] = calibreBookList.map { cb in
       var cover: Image? = nil
