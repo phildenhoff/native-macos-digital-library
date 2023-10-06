@@ -14,8 +14,4 @@ struct book_readerApp: App {
       ContentView()
     }
   }
-    
-    init() {
-        x()
-    }
 }

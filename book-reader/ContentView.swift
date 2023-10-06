@@ -39,11 +39,11 @@ struct ContentView: View {
     Book(
       title: "Atomic Habits", customTitleSort: String?.none,
       authorList: Array?.some(["James Clear"]), customAuthorSort: String?.none,
-      series: String?.none, number: Float?.none,path: String?.none, cover: Image("atomic-habits")),
+      series: String?.none, number: Float?.none, path: String?.none, cover: Image("atomic-habits")),
     Book(
       title: "The Sad Bastard Cookbook", customTitleSort: String?.none,
       authorList: Array?.some(["Rachel A. Rosen", "Zilla Novikov"]), customAuthorSort: String?.none,
-      series: String?.none, number: Float?.none, path: String?.none,cover: Image?.none),
+      series: String?.none, number: Float?.none, path: String?.none, cover: Image?.none),
   ]
 
   var body: some View {
@@ -55,12 +55,11 @@ struct ContentView: View {
             cover
               .resizable()
               .aspectRatio(contentMode: .fit)
-              .frame(width: 55, alignment: .topLeading)
           }
 
-        }.frame(maxWidth: 55)
+        }.frame(maxWidth: 180)
       }
-      .width(min: 35, max: 55)
+      .width(min: 35, max: 180)
       .alignment(TableColumnAlignment.center)
       TableColumn("Title", value: \.title)
       TableColumn("Title sort") { book in
@@ -76,7 +75,7 @@ struct ContentView: View {
     }
     .onAppear {
       // Perform your asynchronous task here, which updates bookList
-        readLibraryMetadata()
+      readLibraryMetadata()
       requestImagePermissions()
     }
   }
@@ -132,17 +131,32 @@ struct ContentView: View {
 
   func readLibraryMetadata() {
     let calibreBookList = x()
-      print(calibreBookList)
     let newBooks: [Book] = calibreBookList.map { cb in
-        let cover = cb.hasCover ? Image?.none : Image?.none
+      var cover: Image? = nil
+
+      if cb.hasCover {
+        let coverUrl = calibreLibraryPath.appendingPathComponent(cb.path).appendingPathComponent(
+          "cover.jpg")
+        do {
+          let imageData = try Data(contentsOf: coverUrl)
+          if let image = NSImage(data: imageData) {
+            cover = Image(nsImage: image)
+          }
+        } catch {
+          print("errored trying to read cover")
+        }
+      }
+
       return Book(
         title: cb.title, customTitleSort: String?.none, authorList: [String]?.none,
-        customAuthorSort: String?.none, series: String?.none, number: Float?.none, path: cb.path)
+        customAuthorSort: String?.none, series: String?.none, number: Float?.none, path: cb.path,
+        cover: cover)
     }
-      let updatedBookList = newBooks + bookList
-      DispatchQueue.main.async {
-          self.bookList = updatedBookList
-      }
+
+    let updatedBookList = bookList + newBooks
+    DispatchQueue.main.async {
+      self.bookList = updatedBookList
+    }
   }
 }
 
