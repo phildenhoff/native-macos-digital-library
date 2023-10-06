@@ -28,12 +28,40 @@ struct Book: Identifiable {
   func loadCover() -> Image? {
     return cover
   }
+
+  init(fromLibraryBook: LibraryBook) {
+    title = fromLibraryBook.title
+    customTitleSort = fromLibraryBook.sortableTitle()
+    authorList = fromLibraryBook.authorList
+    customAuthorSort = fromLibraryBook.sortableAuthorList()
+    series = String?.none
+    number = Float?.none
+    path = String?.none
+    if let coverImageUrl = fromLibraryBook.coverImageUrl {
+      cover = genBookCoverImage(imageUrl: coverImageUrl)
+    } else {
+      cover = Image?.none
+    }
+  }
+
+  init(
+    title: String, customTitleSort: String?, authorList: [String]?, customAuthorSort: String?,
+    series: String?, number: Float?, path: String?, cover: Image?
+  ) {
+    self.title = title
+    self.customTitleSort = customTitleSort
+    self.authorList = authorList
+    self.customAuthorSort = customAuthorSort
+    self.series = series
+    self.number = number
+    self.path = path
+    self.cover = cover
+  }
 }
 
-func genBookCoverImage(libraryUrl: URL, bookPath: String) -> Image? {
-  let coverUrl = genCalibreBookCoverUrl(libraryUrl: libraryUrl, bookPath: bookPath)
+func genBookCoverImage(imageUrl: URL) -> Image? {
   do {
-    let imageData = try Data(contentsOf: coverUrl)
+    let imageData = try Data(contentsOf: imageUrl)
     if let image = NSImage(data: imageData) {
       return Image(nsImage: image)
     }
@@ -74,18 +102,18 @@ struct ContentView: View {
       }
     }
     .onAppear {
-      openCalibreLibrary()
+      initCalibreLibrary()
     }
   }
 
-  func addBooksToBooklist(list: [Book]) {
+  private func addBooksToBooklist(list: [Book]) {
     let updatedBookList = bookList + list
     DispatchQueue.main.async {
       self.bookList = updatedBookList
     }
   }
 
-  func openCalibreLibrary() {
+  func initCalibreLibrary() {
     let openPanel = NSOpenPanel()
     openPanel.title = "Select your calibre library folder"
     openPanel.showsResizeIndicator = true
@@ -98,29 +126,22 @@ struct ContentView: View {
     return openPanel.begin { (result) -> Void in
       if result == NSApplication.ModalResponse.OK {
         if let calibreLibraryUrl = openPanel.url {
-          readLibraryMetadata(libraryUrl: calibreLibraryUrl)
+          readLibraryDatabase(libraryUrl: calibreLibraryUrl)
         }
       }
     }
   }
 
-  func readLibraryMetadata(libraryUrl: URL) {
-    let calibreLibraryPath = libraryUrl
-    let calibreBookList = readBooksFromCalibreDb(libraryUrl: calibreLibraryPath)
-    let newBooks: [Book] = calibreBookList.map { cb in
-      var cover: Image? = nil
-
-      if cb.hasCover {
-        cover = genBookCoverImage(libraryUrl: calibreLibraryPath, bookPath: cb.path)
+  func readLibraryDatabase(libraryUrl: URL) {
+    do {
+      let libraryBookList = try CalibreLibrary(fromUrl: libraryUrl)
+      let newBooks: [Book] = libraryBookList.listBooks().map { lb in
+        Book(fromLibraryBook: lb)
       }
-
-      return Book(
-        title: cb.title, customTitleSort: cb.titleSort, authorList: [String]?.none,
-        customAuthorSort: String?.none, series: String?.none, number: Float?.none, path: cb.path,
-        cover: cover)
+      addBooksToBooklist(list: newBooks)
+    } catch {
+      print("oh")
     }
-
-    addBooksToBooklist(list: newBooks)
   }
 }
 

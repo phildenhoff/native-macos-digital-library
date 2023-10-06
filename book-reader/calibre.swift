@@ -60,43 +60,71 @@ private func getColumnIndexByName(statement: OpaquePointer?) -> [String: Int32] 
   return columnIndexByName
 }
 
-func genCalibreBookCoverUrl(libraryUrl: URL, bookPath: String) -> URL {
-  return libraryUrl.appendingPathComponent(bookPath).appendingPathComponent("cover.jpg")
+struct DbInitError: Error {
+  let message: String
 }
 
-func readBooksFromCalibreDb(libraryUrl: URL) -> [CalibreBook] {
-  let metadataDbUrl = buildMetadataDbUrl(libraryUrl: libraryUrl)
+struct CalibreLibrary: Library {
+  let libraryUrl: URL
+
+  var bookList: [CalibreBook] = []
   var db: OpaquePointer? = nil
 
-  if sqlite3_open(metadataDbUrl.path, &db) == SQLITE_OK {
+  init(fromUrl: URL) throws {
+    self.libraryUrl = fromUrl
+
+    let dbUrl = buildMetadataDbUrl(libraryUrl: fromUrl)
+    let dbOpenResult = sqlite3_open(dbUrl.path, &db)
+    if dbOpenResult != SQLITE_OK {
+      if let errorMessage = String(validatingUTF8: sqlite3_errmsg(db)) {
+        print("Unable to open the database. Error: \(errorMessage)")
+      }
+      throw DbInitError(message: "Failed to open database at \(self.libraryUrl)")
+    }
+
+    let loadedBooks = loadBooksFromDb()
+    bookList = loadedBooks
+  }
+
+  private func loadBooksFromDb() -> [CalibreBook] {
     let query = "SELECT * FROM books;"
     var statement: OpaquePointer? = nil
 
     if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
-      var calibreBooks = [CalibreBook]()
-
+      var bookCollector = [CalibreBook]()
       let columnIndexByName = getColumnIndexByName(statement: statement)
 
       while sqlite3_step(statement) == SQLITE_ROW {
         let possibleBook = calibreBookFromRow(
           statement: statement!, columnIndexByName: columnIndexByName)
+
         if let cBook = possibleBook {
-          calibreBooks.append(cBook)
+          bookCollector.append(cBook)
         }
       }
 
       sqlite3_finalize(statement)
-      return calibreBooks
+      return bookCollector
     } else {
       if let errorMessage = String(validatingUTF8: sqlite3_errmsg(db)) {
         print("Error executing query. Error: \(errorMessage)")
       }
-      return []
     }
-  } else {
-    if let errorMessage = String(validatingUTF8: sqlite3_errmsg(db)) {
-      print("Unable to open the database. Error: \(errorMessage)")
+    return []
+  }
+
+  func listBooks() -> [LibraryBook] {
+    return bookList.map { cb in
+      LibraryBook(
+        title: cb.title,
+        authorList: [],
+        libraryId: String(cb.calibreId),
+        coverImageUrl: libraryUrl.appending(component: cb.path).appending(component: "cover.jpg")
+      )
     }
+  }
+
+  func listAuthors() -> [LibraryBook] {
     return []
   }
 }
