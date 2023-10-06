@@ -7,22 +7,27 @@ public struct LibraryBook {
 
   // ID of the book within the library
   private let libraryId: String
-  private let sortTitle: String? = String?.none
-  private let sortAuthorList: [String]? = [String]?.none
+  private let customSortTitle: String?
+  private let customSortAuthorList: String?
 
-  init(title: String, authorList: [String], libraryId: String, coverImageUrl: URL? = URL?.none) {
+  init(
+    title: String, authorList: [String], libraryId: String, coverImageUrl: URL? = URL?.none,
+    sortableTitle: String? = String?.none, sortableAuthorList: String? = String?.none
+  ) {
     self.title = title
     self.authorList = authorList
     self.libraryId = libraryId
     self.coverImageUrl = coverImageUrl
+    self.customSortTitle = sortableTitle
+    self.customSortAuthorList = sortableAuthorList
   }
 
   func sortableTitle() -> String {
-    return sortTitle ?? title
+    return customSortTitle ?? title
   }
 
   func sortableAuthorList() -> String {
-    return (sortAuthorList ?? authorList).joined(separator: ", ")
+    return customSortAuthorList ?? authorList.joined(separator: ", ")
   }
 }
 

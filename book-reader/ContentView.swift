@@ -10,9 +10,9 @@ import SwiftUI
 
 struct Book: Identifiable {
   let title: String
-  let customTitleSort: String?
-  let authorList: [String]?
-  let customAuthorSort: String?
+  let sortableTitle: String
+  let authorList: [String]
+  let sortableAuthorList: String
   let series: String?
   let number: Float?
   let path: String?
@@ -20,10 +20,7 @@ struct Book: Identifiable {
   var id = UUID()
 
   func authors() -> String {
-    return authorList?.joined(separator: " & ") ?? ""
-  }
-  func titleSort() -> String {
-    return customTitleSort ?? title
+    return authorList.joined(separator: " & ")
   }
   func loadCover() -> Image? {
     return cover
@@ -31,9 +28,9 @@ struct Book: Identifiable {
 
   init(fromLibraryBook: LibraryBook) {
     title = fromLibraryBook.title
-    customTitleSort = fromLibraryBook.sortableTitle()
+    sortableTitle = fromLibraryBook.sortableTitle()
     authorList = fromLibraryBook.authorList
-    customAuthorSort = fromLibraryBook.sortableAuthorList()
+    sortableAuthorList = fromLibraryBook.sortableAuthorList()
     series = String?.none
     number = Float?.none
     path = String?.none
@@ -45,13 +42,13 @@ struct Book: Identifiable {
   }
 
   init(
-    title: String, customTitleSort: String?, authorList: [String]?, customAuthorSort: String?,
+    title: String, customTitleSort: String?, authorList: [String], customAuthorSort: String?,
     series: String?, number: Float?, path: String?, cover: Image?
   ) {
     self.title = title
-    self.customTitleSort = customTitleSort
+    self.sortableTitle = customTitleSort ?? title
     self.authorList = authorList
-    self.customAuthorSort = customAuthorSort
+    self.sortableAuthorList = customAuthorSort ?? authorList.joined(separator: ", ")
     self.series = series
     self.number = number
     self.path = path
@@ -90,11 +87,14 @@ struct ContentView: View {
       .width(min: 35, max: 180)
       .alignment(TableColumnAlignment.center)
       TableColumn("Title", value: \.title)
-      TableColumn("Title sort") { book in
-        Text(book.titleSort())
+      TableColumn("Title (sort order)") { book in
+        Text(book.sortableTitle)
       }
       TableColumn("Authors") { book in
         Text(book.authors())
+      }
+      TableColumn("Authors (sort order)") { book in
+        Text(book.sortableAuthorList)
       }
     } rows: {
       ForEach(bookList, id: \.id) { book in
@@ -134,8 +134,8 @@ struct ContentView: View {
 
   func readLibraryDatabase(libraryUrl: URL) {
     do {
-      let libraryBookList = try CalibreLibrary(fromUrl: libraryUrl)
-      let newBooks: [Book] = libraryBookList.listBooks().map { lb in
+      let library: Library = try CalibreLibrary(fromUrl: libraryUrl)
+      let newBooks: [Book] = library.listBooks().map { lb in
         Book(fromLibraryBook: lb)
       }
       addBooksToBooklist(list: newBooks)

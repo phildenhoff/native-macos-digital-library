@@ -1,14 +1,20 @@
 import Foundation
 import SQLite3
 
-struct CalibreBook {
-  let id = UUID()
-  let calibreId: Int
+struct CalibreBook: Identifiable {
+  let id: Int
   let title: String
-  let titleSort: String
+  let sortableTitle: String
+  let sortableAuthorList: String
   let path: String
   let hasCover: Bool
   let orderInSeries: Int
+}
+
+struct CalibreAuthor: Identifiable {
+  let id: Int
+  let name: String
+  let nameSort: String
 }
 
 private func buildMetadataDbUrl(libraryUrl: URL) -> URL {
@@ -22,11 +28,13 @@ private func calibreBookFromRow(statement: OpaquePointer, columnIndexByName: [St
   if let idIndex = columnIndexByName["id"],
     let titleIndex = columnIndexByName["title"],
     let titleSortIndex = columnIndexByName["sort"],
+    let authorSortIndex = columnIndexByName["author_sort"],
     let pathIndex = columnIndexByName["path"],
     let seriesIndexIndex = columnIndexByName["series_index"],
     let hasCoverIndex = columnIndexByName["has_cover"],
     let title = sqlite3_column_text(statement, titleIndex),
     let titleSort = sqlite3_column_text(statement, titleSortIndex),
+    let authorSort = sqlite3_column_text(statement, authorSortIndex),
     let path = sqlite3_column_text(statement, pathIndex)
   {
     let id = sqlite3_column_int(statement, idIndex)
@@ -35,15 +43,67 @@ private func calibreBookFromRow(statement: OpaquePointer, columnIndexByName: [St
 
     let titleString = String(cString: title)
     let titleSortString = String(cString: titleSort)
+    let authorSortString = String(cString: authorSort)
     let pathString = String(cString: path)
     let hasCoverBool = hasCover == 1
 
     return CalibreBook(
-      calibreId: Int(id), title: titleString, titleSort: titleSortString, path: pathString,
-      hasCover: hasCoverBool, orderInSeries: Int(orderInSeries))
+      id: Int(id),
+      title: titleString,
+      sortableTitle: titleSortString,
+      sortableAuthorList: authorSortString,
+      path: pathString,
+      hasCover: hasCoverBool,
+      orderInSeries: Int(orderInSeries)
+    )
   } else {
     return nil
   }
+}
+
+private func authorFromRow(statement: OpaquePointer, columnIndexByName: [String: Int32])
+  -> CalibreAuthor?
+{
+  if let idIndex = columnIndexByName["id"],
+    let nameIndex = columnIndexByName["name"],
+    let nameSortIndex = columnIndexByName["sort"],
+    let name = sqlite3_column_text(statement, nameIndex),
+    let nameSort = sqlite3_column_text(statement, nameSortIndex)
+  {
+    let id = sqlite3_column_int(statement, idIndex)
+
+    let nameString = String(cString: name)
+    let nameSortString = String(cString: nameSort)
+
+    return CalibreAuthor(id: Int(id), name: nameString, nameSort: nameSortString)
+  } else {
+    return nil
+  }
+}
+
+func makeSqlQuery<TResult>(
+  dbPointer: OpaquePointer, query: String,
+  genResultFromRow: (OpaquePointer, [String: Int32]) -> TResult
+) -> [TResult] {
+  var statement: OpaquePointer? = nil
+  var resultCollector = [TResult]()
+
+  if sqlite3_prepare_v2(dbPointer, query, -1, &statement, nil) == SQLITE_OK {
+    let columnIndexByName = getColumnIndexByName(statement: statement)
+
+    while sqlite3_step(statement) == SQLITE_ROW {
+      let rowResult = genResultFromRow(statement!, columnIndexByName)
+      resultCollector.append(rowResult)
+    }
+
+    sqlite3_finalize(statement)
+  } else {
+    if let errorMessage = String(validatingUTF8: sqlite3_errmsg(dbPointer)) {
+      print("Error executing query. Error: \(errorMessage)")
+    }
+  }
+
+  return resultCollector
 }
 
 private func getColumnIndexByName(statement: OpaquePointer?) -> [String: Int32] {
@@ -68,6 +128,7 @@ struct CalibreLibrary: Library {
   let libraryUrl: URL
 
   var bookList: [CalibreBook] = []
+  var authorList: [CalibreAuthor] = []
   var db: OpaquePointer? = nil
 
   init(fromUrl: URL) throws {
@@ -84,42 +145,71 @@ struct CalibreLibrary: Library {
 
     let loadedBooks = loadBooksFromDb()
     bookList = loadedBooks
+    let loadedAuthors = loadAuthorsFromDb()
+    authorList = loadedAuthors
+  }
+
+  private func loadAuthorsFromDb() -> [CalibreAuthor] {
+    let query = """
+        SELECT
+          id,
+          name,
+          sort
+        FROM
+          authors;
+      """
+    let authorResults = makeSqlQuery(dbPointer: db!, query: query) {
+      (statement, columnIndexByName) -> CalibreAuthor in
+      return authorFromRow(statement: statement, columnIndexByName: columnIndexByName)!
+    }
+    return authorResults
   }
 
   private func loadBooksFromDb() -> [CalibreBook] {
     let query = "SELECT * FROM books;"
-    var statement: OpaquePointer? = nil
+    let bookResults = makeSqlQuery(dbPointer: db!, query: query) {
+      (statement, columnIndexByName) -> CalibreBook in
+      return calibreBookFromRow(statement: statement, columnIndexByName: columnIndexByName)!
+    }
+    return bookResults
+  }
 
-    if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
-      var bookCollector = [CalibreBook]()
-      let columnIndexByName = getColumnIndexByName(statement: statement)
-
-      while sqlite3_step(statement) == SQLITE_ROW {
-        let possibleBook = calibreBookFromRow(
-          statement: statement!, columnIndexByName: columnIndexByName)
-
-        if let cBook = possibleBook {
-          bookCollector.append(cBook)
-        }
-      }
-
-      sqlite3_finalize(statement)
-      return bookCollector
-    } else {
-      if let errorMessage = String(validatingUTF8: sqlite3_errmsg(db)) {
-        print("Error executing query. Error: \(errorMessage)")
+  private func authorsForBook(bookId: Int) -> [String] {
+    let query = """
+        SELECT
+          authors.name
+        FROM
+          books_authors_link
+        INNER JOIN
+          authors
+        ON
+          books_authors_link.author = authors.id
+        WHERE
+          books_authors_link.book = \(bookId);
+      """
+    let authorResults = makeSqlQuery(dbPointer: db!, query: query) {
+      (statement, columnIndexByName) -> String in
+      if let nameIndex = columnIndexByName["name"],
+        let name = sqlite3_column_text(statement, nameIndex)
+      {
+        return String(cString: name)
+      } else {
+        return ""
       }
     }
-    return []
+    return authorResults
   }
 
   func listBooks() -> [LibraryBook] {
     return bookList.map { cb in
-      LibraryBook(
+      let authors = authorsForBook(bookId: cb.id)
+      return LibraryBook(
         title: cb.title,
-        authorList: [],
-        libraryId: String(cb.calibreId),
-        coverImageUrl: libraryUrl.appending(component: cb.path).appending(component: "cover.jpg")
+        authorList: authors,
+        libraryId: String(cb.id),
+        coverImageUrl: libraryUrl.appending(component: cb.path).appending(component: "cover.jpg"),
+        sortableTitle: cb.sortableTitle,
+        sortableAuthorList: cb.sortableAuthorList
       )
     }
   }
