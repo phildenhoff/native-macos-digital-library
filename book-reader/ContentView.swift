@@ -5,67 +5,122 @@
 //  Created by Phil Denhoff on 2023-10-04.
 //
 
-import SwiftUI
 import PhotosUI
+import SwiftUI
 
 struct Book: Identifiable {
-    let title: String
-    let customTitleSort: String?
-    let authorList: [String]?
-    let customAuthorSort: String?
-    let series: String?
-    let number: Float?
-    let cover: Image
-    let id = UUID()
-    
-    func authors() -> String {
-        return authorList?.joined(separator: " & ") ?? ""
+  let title: String
+  let customTitleSort: String?
+  let authorList: [String]?
+  let customAuthorSort: String?
+  let series: String?
+  let number: Float?
+  var cover: Image?
+  var id = UUID()
+
+  func authors() -> String {
+    return authorList?.joined(separator: " & ") ?? ""
+  }
+  func titleSort() -> String {
+    let titleWords = title.split(separator: " ")
+    if titleWords.first == "The" {
+      return titleWords.suffix(from: 1).joined(separator: " ").appending(", The")
     }
-    func titleSort() -> String {
-        let titleWords = title.split(separator: " ")
-        if (titleWords.first == "The") {
-            return titleWords.suffix(from: 1).joined(separator: " ").appending(", The")
-        }
-        return title
-    }
-    func loadCover() -> Image {
-        return cover
-    }
+    return title
+  }
+  func loadCover() -> Image? {
+    return cover
+  }
 }
 
-private let bookList = [
-    Book(title:"Atomic Habits", customTitleSort: String?.none, authorList:Array?.some(["James Clear"]), customAuthorSort: String?.none, series:String?.none, number:Float?.none, cover:Image("atomic-habits")),
-    Book(title:"The Sad Bastard Cookbook", customTitleSort: String?.none, authorList:Array?.some(["Rachel A. Rosen", "Zilla Novikov"]), customAuthorSort: String?.none, series:String?.none, number:Float?.none, cover:Image("sad-bastard-cookbook")),
-]
-
 struct ContentView: View {
-    var body: some View {
-        Table(of: Book.self) {
-            TableColumn("Cover") {book in
-                VStack {
-                    book.loadCover()
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 55, alignment: .topLeading)
-                }.frame(maxWidth: 55)
-            }
-            .width(min: 35, max: 55)
-            .alignment(TableColumnAlignment.center)
-            TableColumn("Title", value: \.title)
-            TableColumn("Title sort") {book in
-                Text(book.titleSort())
-            }
-            TableColumn("Authors") {book in
-                Text(book.authors())
-            }
-        } rows: {
-            ForEach(bookList) { book in
-                TableRow(book)
-            }
-        }
+  @State private var bookList = [
+    Book(
+      title: "Atomic Habits", customTitleSort: String?.none,
+      authorList: Array?.some(["James Clear"]), customAuthorSort: String?.none,
+      series: String?.none, number: Float?.none, cover: Image("atomic-habits")),
+    Book(
+      title: "The Sad Bastard Cookbook", customTitleSort: String?.none,
+      authorList: Array?.some(["Rachel A. Rosen", "Zilla Novikov"]), customAuthorSort: String?.none,
+      series: String?.none, number: Float?.none, cover: Image?.none),
+  ]
+
+  var body: some View {
+    Table(of: Book.self) {
+      TableColumn("Cover") { book in
+        VStack {
+          let possibleCover = book.loadCover()
+          if let cover = possibleCover {
+            cover
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 55, alignment: .topLeading)
+          }
+
+        }.frame(maxWidth: 55)
+      }
+      .width(min: 35, max: 55)
+      .alignment(TableColumnAlignment.center)
+      TableColumn("Title", value: \.title)
+      TableColumn("Title sort") { book in
+        Text(book.titleSort())
+      }
+      TableColumn("Authors") { book in
+        Text(book.authors())
+      }
+    } rows: {
+      ForEach(bookList, id: \.id) { book in
+        TableRow(book)
+      }
     }
+    .onAppear {
+      // Perform your asynchronous task here, which updates bookList
+      requestImagePermissions()
+    }
+  }
+
+  func addImagesToBooks(imageUrls: [URL]) {
+    imageUrls.forEach({ url in
+      // You can now read the selected image file using the URL
+      do {
+        let imageData = try Data(contentsOf: url)
+        if let image = NSImage(data: imageData) {
+          DispatchQueue.global().async {
+            // Update your view with the loaded image on the main thread
+
+            var updatedBook = bookList.last
+            updatedBook?.cover = Image(nsImage: image)
+
+            updatedBook?.id = UUID()
+            let newBookList = [bookList[0], updatedBook!]
+            DispatchQueue.main.async {
+              self.bookList = newBookList
+            }
+          }
+        }
+      } catch {
+        // Handle any errors while reading the file
+        print("errored trying to requrest image perms")
+      }
+    })
+  }
+
+  func requestImagePermissions() {
+    let openPanel = NSOpenPanel()
+    openPanel.allowedContentTypes = [
+      UTType.jpeg, UTType.png, UTType.image,
+      UTType.database, UTType.directory,
+    ]
+    openPanel.allowsMultipleSelection = true  // Set to true if you want to allow multiple files
+
+    return openPanel.begin { (result) -> Void in
+      if result == NSApplication.ModalResponse.OK {
+        addImagesToBooks(imageUrls: openPanel.urls)
+      }
+    }
+  }
 }
 
 #Preview {
-    ContentView()
+  ContentView()
 }
