@@ -30,8 +30,8 @@ struct Book: Identifiable {
   }
 }
 
-func genBookCoverImage(bookPath: String) -> Image? {
-  let coverUrl = genCalibreBookCoverUrl(bookPath: bookPath)
+func genBookCoverImage(libraryUrl: URL, bookPath: String) -> Image? {
+  let coverUrl = genCalibreBookCoverUrl(libraryUrl: libraryUrl, bookPath: bookPath)
   do {
     let imageData = try Data(contentsOf: coverUrl)
     if let image = NSImage(data: imageData) {
@@ -75,8 +75,8 @@ struct ContentView: View {
     }
     .onAppear {
       // Perform your asynchronous task here, which updates bookList
-      readLibraryMetadata()
-      requestImagePermissions()
+      openCalibreLibrary()
+      // requestImagePermissions()
     }
   }
 
@@ -118,8 +118,6 @@ struct ContentView: View {
 
     return openPanel.begin { (result) -> Void in
       if result == NSApplication.ModalResponse.OK {
-        let directory = openPanel.url
-        print(openPanel.urls)
         addImagesToBooks(imageUrls: openPanel.urls)
       }
     }
@@ -132,13 +130,35 @@ struct ContentView: View {
     }
   }
 
-  func readLibraryMetadata() {
-    let calibreBookList = readBooksFromCalibreDb()
+  func openCalibreLibrary() {
+    let openPanel = NSOpenPanel()
+    openPanel.title = "Select your calibre library folder"
+    openPanel.showsResizeIndicator = true
+    openPanel.showsHiddenFiles = false
+    openPanel.canChooseDirectories = true
+    openPanel.canCreateDirectories = false
+    openPanel.canChooseFiles = false
+    openPanel.allowsMultipleSelection = false
+
+    return openPanel.begin { (result) -> Void in
+      if result == NSApplication.ModalResponse.OK {
+        if let calibreLibraryUrl = openPanel.url {
+          print("calibreLibraryPath", calibreLibraryUrl)
+          readLibraryMetadata(libraryUrl: calibreLibraryUrl)
+        }
+      }
+    }
+  }
+
+  func readLibraryMetadata(libraryUrl: URL) {
+    let calibreLibraryPath = libraryUrl
+    // let calibreLibraryPath = URL(filePath: "/Users/phil/dev/macos-book-app/sample-library/")
+    let calibreBookList = readBooksFromCalibreDb(libraryUrl: calibreLibraryPath)
     let newBooks: [Book] = calibreBookList.map { cb in
       var cover: Image? = nil
 
       if cb.hasCover {
-          cover = genBookCoverImage(bookPath: cb.path)
+        cover = genBookCoverImage(libraryUrl: calibreLibraryPath, bookPath: cb.path)
       }
 
       return Book(

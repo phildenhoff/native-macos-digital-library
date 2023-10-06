@@ -1,8 +1,6 @@
 import Foundation
 import SQLite3
 
-let calibreLibraryPath = URL(filePath: "/Users/phil/dev/macos-book-app/sample-library/")
-
 struct CalibreBook {
   let id = UUID()
   let calibreId: Int
@@ -13,8 +11,8 @@ struct CalibreBook {
   let orderInSeries: Int
 }
 
-func buildMetadataDbUrl(libraryPath: URL) -> URL {
-  let metadataPath = libraryPath.appending(path: "/metadata.db")
+func buildMetadataDbUrl(libraryUrl: URL) -> URL {
+  let metadataPath = libraryUrl.appending(path: "/metadata.db")
   return metadataPath
 }
 
@@ -48,12 +46,12 @@ func calibreBookFromRow(statement: OpaquePointer, columnIndexByName: [String: In
   }
 }
 
-func genCalibreBookCoverUrl(bookPath: String) -> URL {
-  return calibreLibraryPath.appendingPathComponent(bookPath).appendingPathComponent("cover.jpg")
+func genCalibreBookCoverUrl(libraryUrl: URL, bookPath: String) -> URL {
+  return libraryUrl.appendingPathComponent(bookPath).appendingPathComponent("cover.jpg")
 }
 
-func readBooksFromCalibreDb() -> [CalibreBook] {
-  let metadataDbUrl = buildMetadataDbUrl(libraryPath: calibreLibraryPath)
+func readBooksFromCalibreDb(libraryUrl: URL) -> [CalibreBook] {
+  let metadataDbUrl = buildMetadataDbUrl(libraryUrl: libraryUrl)
   var db: OpaquePointer? = nil
 
   if sqlite3_open(metadataDbUrl.path, &db) == SQLITE_OK {
