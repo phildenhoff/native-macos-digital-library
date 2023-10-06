@@ -15,6 +15,8 @@
 		4AE388F62ACE8E4700F502EE /* book_readerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE388F52ACE8E4700F502EE /* book_readerUITests.swift */; };
 		4AE388F82ACE8E4700F502EE /* book_readerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE388F72ACE8E4700F502EE /* book_readerUITestsLaunchTests.swift */; };
 		4AE389072ACF5A9300F502EE /* library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE389062ACF5A9300F502EE /* library.swift */; };
+		4AE3890A2ACFA8F700F502EE /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AE389092ACFA8F700F502EE /* libsqlite3.tbd */; };
+		4AE3890C2ACFA96500F502EE /* calibreMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE3890B2ACFA96500F502EE /* calibreMetadata.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +49,8 @@
 		4AE388F52ACE8E4700F502EE /* book_readerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = book_readerUITests.swift; sourceTree = "<group>"; };
 		4AE388F72ACE8E4700F502EE /* book_readerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = book_readerUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		4AE389062ACF5A9300F502EE /* library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = library.swift; sourceTree = "<group>"; };
+		4AE389092ACFA8F700F502EE /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		4AE3890B2ACFA96500F502EE /* calibreMetadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = calibreMetadata.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +58,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AE3890A2ACFA8F700F502EE /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,6 +86,7 @@
 				4AE388EA2ACE8E4600F502EE /* book-readerTests */,
 				4AE388F42ACE8E4700F502EE /* book-readerUITests */,
 				4AE388D72ACE8E4500F502EE /* Products */,
+				4AE389082ACFA8F700F502EE /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -97,6 +103,7 @@
 		4AE388D82ACE8E4500F502EE /* book-reader */ = {
 			isa = PBXGroup;
 			children = (
+				4AE3890B2ACFA96500F502EE /* calibreMetadata.swift */,
 				4AE388D92ACE8E4500F502EE /* book_readerApp.swift */,
 				4AE388DB2ACE8E4500F502EE /* ContentView.swift */,
 				4AE389062ACF5A9300F502EE /* library.swift */,
@@ -130,6 +137,14 @@
 				4AE388F72ACE8E4700F502EE /* book_readerUITestsLaunchTests.swift */,
 			);
 			path = "book-readerUITests";
+			sourceTree = "<group>";
+		};
+		4AE389082ACFA8F700F502EE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4AE389092ACFA8F700F502EE /* libsqlite3.tbd */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -265,6 +280,7 @@
 				4AE389072ACF5A9300F502EE /* library.swift in Sources */,
 				4AE388DC2ACE8E4500F502EE /* ContentView.swift in Sources */,
 				4AE388DA2ACE8E4500F502EE /* book_readerApp.swift in Sources */,
+				4AE3890C2ACFA96500F502EE /* calibreMetadata.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct book_readerApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+  var body: some Scene {
+    WindowGroup {
+      ContentView()
+    }
+  }
+    
+    init() {
+        x()
     }
 }

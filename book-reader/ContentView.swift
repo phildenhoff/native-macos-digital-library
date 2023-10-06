@@ -15,6 +15,7 @@ struct Book: Identifiable {
   let customAuthorSort: String?
   let series: String?
   let number: Float?
+  let path: String?
   var cover: Image?
   var id = UUID()
 
@@ -38,11 +39,11 @@ struct ContentView: View {
     Book(
       title: "Atomic Habits", customTitleSort: String?.none,
       authorList: Array?.some(["James Clear"]), customAuthorSort: String?.none,
-      series: String?.none, number: Float?.none, cover: Image("atomic-habits")),
+      series: String?.none, number: Float?.none,path: String?.none, cover: Image("atomic-habits")),
     Book(
       title: "The Sad Bastard Cookbook", customTitleSort: String?.none,
       authorList: Array?.some(["Rachel A. Rosen", "Zilla Novikov"]), customAuthorSort: String?.none,
-      series: String?.none, number: Float?.none, cover: Image?.none),
+      series: String?.none, number: Float?.none, path: String?.none,cover: Image?.none),
   ]
 
   var body: some View {
@@ -75,6 +76,7 @@ struct ContentView: View {
     }
     .onAppear {
       // Perform your asynchronous task here, which updates bookList
+        readLibraryMetadata()
       requestImagePermissions()
     }
   }
@@ -107,17 +109,40 @@ struct ContentView: View {
 
   func requestImagePermissions() {
     let openPanel = NSOpenPanel()
-    openPanel.allowedContentTypes = [
-      UTType.jpeg, UTType.png, UTType.image,
-      UTType.database, UTType.directory,
-    ]
-    openPanel.allowsMultipleSelection = true  // Set to true if you want to allow multiple files
+    openPanel.title = "Select your calibre library folder"
+    openPanel.showsResizeIndicator = true
+    openPanel.showsHiddenFiles = false
+    openPanel.canChooseDirectories = true
+    openPanel.canCreateDirectories = true
+    openPanel.canChooseFiles = false
+    openPanel.allowsMultipleSelection = false
 
     return openPanel.begin { (result) -> Void in
       if result == NSApplication.ModalResponse.OK {
+        let directory = openPanel.url
+        print(openPanel.urls)
         addImagesToBooks(imageUrls: openPanel.urls)
       }
     }
+  }
+
+  func addCalibreBookToList(cb: CalibreBook) {
+
+  }
+
+  func readLibraryMetadata() {
+    let calibreBookList = x()
+      print(calibreBookList)
+    let newBooks: [Book] = calibreBookList.map { cb in
+        let cover = cb.hasCover ? Image?.none : Image?.none
+      return Book(
+        title: cb.title, customTitleSort: String?.none, authorList: [String]?.none,
+        customAuthorSort: String?.none, series: String?.none, number: Float?.none, path: cb.path)
+    }
+      let updatedBookList = newBooks + bookList
+      DispatchQueue.main.async {
+          self.bookList = updatedBookList
+      }
   }
 }
 
