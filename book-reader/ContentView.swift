@@ -74,52 +74,7 @@ struct ContentView: View {
       }
     }
     .onAppear {
-      // Perform your asynchronous task here, which updates bookList
       openCalibreLibrary()
-      // requestImagePermissions()
-    }
-  }
-
-  func addImagesToBooks(imageUrls: [URL]) {
-    imageUrls.forEach({ url in
-      // You can now read the selected image file using the URL
-      do {
-        let imageData = try Data(contentsOf: url)
-        if let image = NSImage(data: imageData) {
-          DispatchQueue.global().async {
-            // Update your view with the loaded image on the main thread
-
-            var updatedBook = bookList.last
-            updatedBook?.cover = Image(nsImage: image)
-
-            updatedBook?.id = UUID()
-            let newBookList = [bookList[0], updatedBook!]
-            DispatchQueue.main.async {
-              self.bookList = newBookList
-            }
-          }
-        }
-      } catch {
-        // Handle any errors while reading the file
-        print("errored trying to requrest image perms")
-      }
-    })
-  }
-
-  func requestImagePermissions() {
-    let openPanel = NSOpenPanel()
-    openPanel.title = "Select your calibre library folder"
-    openPanel.showsResizeIndicator = true
-    openPanel.showsHiddenFiles = false
-    openPanel.canChooseDirectories = true
-    openPanel.canCreateDirectories = true
-    openPanel.canChooseFiles = false
-    openPanel.allowsMultipleSelection = false
-
-    return openPanel.begin { (result) -> Void in
-      if result == NSApplication.ModalResponse.OK {
-        addImagesToBooks(imageUrls: openPanel.urls)
-      }
     }
   }
 
