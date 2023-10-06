@@ -56,6 +56,10 @@ func calibreBookFromRow(statement: OpaquePointer, columnIndexByName: [String: In
   }
 }
 
+func genBookCoverUrl(book: CalibreBook) -> URL {
+  return calibreLibraryPath.appendingPathComponent(book.path).appendingPathComponent("cover.jpg")
+}
+
 func x() -> [CalibreBook] {
   var db: OpaquePointer? = nil  // The SQLite database connection pointer
 

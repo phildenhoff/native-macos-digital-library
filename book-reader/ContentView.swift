@@ -34,17 +34,21 @@ struct Book: Identifiable {
   }
 }
 
+func genBookCoverImage(book: CalibreBook) -> Image? {
+  let coverUrl = genBookCoverUrl(book: book)
+  do {
+    let imageData = try Data(contentsOf: coverUrl)
+    if let image = NSImage(data: imageData) {
+      return Image(nsImage: image)
+    }
+  } catch {
+    print("errored trying to read cover")
+  }
+    return Image?.none
+}
+
 struct ContentView: View {
-  @State private var bookList = [
-    Book(
-      title: "Atomic Habits", customTitleSort: String?.none,
-      authorList: Array?.some(["James Clear"]), customAuthorSort: String?.none,
-      series: String?.none, number: Float?.none, path: String?.none, cover: Image("atomic-habits")),
-    Book(
-      title: "The Sad Bastard Cookbook", customTitleSort: String?.none,
-      authorList: Array?.some(["Rachel A. Rosen", "Zilla Novikov"]), customAuthorSort: String?.none,
-      series: String?.none, number: Float?.none, path: String?.none, cover: Image?.none),
-  ]
+    @State private var bookList: [Book] = []
 
   var body: some View {
     Table(of: Book.self) {
@@ -125,8 +129,11 @@ struct ContentView: View {
     }
   }
 
-  func addCalibreBookToList(cb: CalibreBook) {
-
+  func addBooksToBooklist(list: [Book]) {
+    let updatedBookList = bookList + list
+    DispatchQueue.main.async {
+      self.bookList = updatedBookList
+    }
   }
 
   func readLibraryMetadata() {
@@ -135,16 +142,7 @@ struct ContentView: View {
       var cover: Image? = nil
 
       if cb.hasCover {
-        let coverUrl = calibreLibraryPath.appendingPathComponent(cb.path).appendingPathComponent(
-          "cover.jpg")
-        do {
-          let imageData = try Data(contentsOf: coverUrl)
-          if let image = NSImage(data: imageData) {
-            cover = Image(nsImage: image)
-          }
-        } catch {
-          print("errored trying to read cover")
-        }
+        cover = genBookCoverImage(book: cb)
       }
 
       return Book(
@@ -153,10 +151,7 @@ struct ContentView: View {
         cover: cover)
     }
 
-    let updatedBookList = bookList + newBooks
-    DispatchQueue.main.async {
-      self.bookList = updatedBookList
-    }
+    addBooksToBooklist(list: newBooks)
   }
 }
 
