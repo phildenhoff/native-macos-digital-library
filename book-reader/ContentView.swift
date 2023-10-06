@@ -44,11 +44,11 @@ func genBookCoverImage(book: CalibreBook) -> Image? {
   } catch {
     print("errored trying to read cover")
   }
-    return Image?.none
+  return Image?.none
 }
 
 struct ContentView: View {
-    @State private var bookList: [Book] = []
+  @State private var bookList: [Book] = []
 
   var body: some View {
     Table(of: Book.self) {
@@ -137,7 +137,7 @@ struct ContentView: View {
   }
 
   func readLibraryMetadata() {
-    let calibreBookList = x()
+    let calibreBookList = readBooksFromCalibreDb()
     let newBooks: [Book] = calibreBookList.map { cb in
       var cover: Image? = nil
 

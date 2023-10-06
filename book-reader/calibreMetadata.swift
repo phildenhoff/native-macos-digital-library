@@ -15,28 +15,6 @@ func buildMetadataDbUrl(libraryPath: URL) -> URL {
   return metadataPath
 }
 
-func getMetadataDb(metadataDbUrl: URL) -> Data? {
-  do {
-    let imageData = try Data(contentsOf: metadataDbUrl)
-    return imageData
-  } catch {
-    return Data?.none
-  }
-}
-
-let metadataDbUrl = buildMetadataDbUrl(libraryPath: calibreLibraryPath)
-let metadataDb = getMetadataDb(metadataDbUrl: metadataDbUrl)
-
-func printRow(statement: OpaquePointer, titleIndex: Int32, pathIndex: Int32) {
-  if let title = sqlite3_column_text(statement, titleIndex),
-    let path = sqlite3_column_text(statement, pathIndex)
-  {
-    let titleString = String(cString: title)
-    let pathString = String(cString: path)
-    print("Title: \(titleString)\tPath: \(pathString)")
-  }
-}
-
 func calibreBookFromRow(statement: OpaquePointer, columnIndexByName: [String: Int32])
   -> CalibreBook?
 {
@@ -60,8 +38,9 @@ func genBookCoverUrl(book: CalibreBook) -> URL {
   return calibreLibraryPath.appendingPathComponent(book.path).appendingPathComponent("cover.jpg")
 }
 
-func x() -> [CalibreBook] {
-  var db: OpaquePointer? = nil  // The SQLite database connection pointer
+func readBooksFromCalibreDb() -> [CalibreBook] {
+  let metadataDbUrl = buildMetadataDbUrl(libraryPath: calibreLibraryPath)
+  var db: OpaquePointer? = nil
 
   if sqlite3_open(metadataDbUrl.path, &db) == SQLITE_OK {
     let query = "SELECT * FROM books;"
