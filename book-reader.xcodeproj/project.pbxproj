@@ -14,7 +14,6 @@
 		4AE388EC2ACE8E4600F502EE /* book_readerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE388EB2ACE8E4600F502EE /* book_readerTests.swift */; };
 		4AE388F62ACE8E4700F502EE /* book_readerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE388F52ACE8E4700F502EE /* book_readerUITests.swift */; };
 		4AE388F82ACE8E4700F502EE /* book_readerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE388F72ACE8E4700F502EE /* book_readerUITestsLaunchTests.swift */; };
-		4AE389072ACF5A9300F502EE /* library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE389062ACF5A9300F502EE /* library.swift */; };
 		4AE3890A2ACFA8F700F502EE /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AE389092ACFA8F700F502EE /* libsqlite3.tbd */; };
 		4AE3890C2ACFA96500F502EE /* calibre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE3890B2ACFA96500F502EE /* calibre.swift */; };
 /* End PBXBuildFile section */
@@ -48,7 +47,6 @@
 		4AE388F12ACE8E4700F502EE /* book-readerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "book-readerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AE388F52ACE8E4700F502EE /* book_readerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = book_readerUITests.swift; sourceTree = "<group>"; };
 		4AE388F72ACE8E4700F502EE /* book_readerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = book_readerUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		4AE389062ACF5A9300F502EE /* library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = library.swift; sourceTree = "<group>"; };
 		4AE389092ACFA8F700F502EE /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		4AE3890B2ACFA96500F502EE /* calibre.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = calibre.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -106,7 +104,6 @@
 				4AE3890B2ACFA96500F502EE /* calibre.swift */,
 				4AE388D92ACE8E4500F502EE /* book_readerApp.swift */,
 				4AE388DB2ACE8E4500F502EE /* ContentView.swift */,
-				4AE389062ACF5A9300F502EE /* library.swift */,
 				4AE388DD2ACE8E4600F502EE /* Assets.xcassets */,
 				4AE388E22ACE8E4600F502EE /* book_reader.entitlements */,
 				4AE388DF2ACE8E4600F502EE /* Preview Content */,
@@ -277,7 +274,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AE389072ACF5A9300F502EE /* library.swift in Sources */,
 				4AE388DC2ACE8E4500F502EE /* ContentView.swift in Sources */,
 				4AE388DA2ACE8E4500F502EE /* book_readerApp.swift in Sources */,
 				4AE3890C2ACFA96500F502EE /* calibre.swift in Sources */,
