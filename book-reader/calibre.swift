@@ -46,6 +46,20 @@ private func calibreBookFromRow(statement: OpaquePointer, columnIndexByName: [St
   }
 }
 
+private func getColumnIndexByName(statement: OpaquePointer?) -> [String: Int32] {
+  let columnCount = sqlite3_column_count(statement)
+
+  var columnIndexByName = [String: Int32]()
+  for i in 0..<columnCount {
+    if let columnName = sqlite3_column_name(statement, i) {
+      let columnNameString = String(cString: columnName)
+      columnIndexByName[columnNameString] = Int32(i)
+    }
+  }
+
+  return columnIndexByName
+}
+
 func genCalibreBookCoverUrl(libraryUrl: URL, bookPath: String) -> URL {
   return libraryUrl.appendingPathComponent(bookPath).appendingPathComponent("cover.jpg")
 }
@@ -60,17 +74,8 @@ func readBooksFromCalibreDb(libraryUrl: URL) -> [CalibreBook] {
 
     if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
       var calibreBooks = [CalibreBook]()
-      // Get the number of columns in the result set
-      let columnCount = sqlite3_column_count(statement)
 
-      // Create a dictionary to map column names to their indices
-      var columnIndexByName = [String: Int32]()
-      for i in 0..<columnCount {
-        if let columnName = sqlite3_column_name(statement, i) {
-          let columnNameString = String(cString: columnName)
-          columnIndexByName[columnNameString] = Int32(i)
-        }
-      }
+      let columnIndexByName = getColumnIndexByName(statement: statement)
 
       while sqlite3_step(statement) == SQLITE_ROW {
         let possibleBook = calibreBookFromRow(
