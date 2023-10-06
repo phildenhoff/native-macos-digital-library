@@ -23,19 +23,15 @@ struct Book: Identifiable {
     return authorList?.joined(separator: " & ") ?? ""
   }
   func titleSort() -> String {
-    let titleWords = title.split(separator: " ")
-    if titleWords.first == "The" {
-      return titleWords.suffix(from: 1).joined(separator: " ").appending(", The")
-    }
-    return title
+    return customTitleSort ?? title
   }
   func loadCover() -> Image? {
     return cover
   }
 }
 
-func genBookCoverImage(book: CalibreBook) -> Image? {
-  let coverUrl = genBookCoverUrl(book: book)
+func genBookCoverImage(bookPath: String) -> Image? {
+  let coverUrl = genCalibreBookCoverUrl(bookPath: bookPath)
   do {
     let imageData = try Data(contentsOf: coverUrl)
     if let image = NSImage(data: imageData) {
@@ -142,11 +138,11 @@ struct ContentView: View {
       var cover: Image? = nil
 
       if cb.hasCover {
-        cover = genBookCoverImage(book: cb)
+          cover = genBookCoverImage(bookPath: cb.path)
       }
 
       return Book(
-        title: cb.title, customTitleSort: String?.none, authorList: [String]?.none,
+        title: cb.title, customTitleSort: cb.titleSort, authorList: [String]?.none,
         customAuthorSort: String?.none, series: String?.none, number: Float?.none, path: cb.path,
         cover: cover)
     }
