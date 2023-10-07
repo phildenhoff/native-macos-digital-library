@@ -125,19 +125,21 @@ struct ContentView: View {
                 minHeight: geometry.size.height * 1 / 4, idealHeight: geometry.size.height * 2 / 3,
                 maxHeight: .infinity)
               VStack {
-                Text(selectedBook.title)
-                Text(selectedBook.authors())
+                  Text(selectedBook.title).font(.largeTitle).frame(alignment: .leading)
+                  Text(selectedBook.authors()).frame(alignment: .leading)
               }
               .padding()
-              .frame(maxWidth: .infinity, minHeight: geometry.size.height * 1 / 4, maxHeight: .infinity)
+              .frame(minWidth: geometry.size.width, minHeight: geometry.size.height * 1 / 4, maxHeight: .infinity,
+                     alignment: .topLeading
+              )
             }
             .frame(maxWidth: .infinity, maxHeight: geometry.size.height)
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(
-          minWidth: 80, idealWidth: .infinity * 2 / 5, maxWidth: .infinity * 2 / 3,
-          alignment: .center)
+          minWidth: 80, idealWidth: .infinity * 2 / 5, maxWidth: .infinity * 2 / 3
+        )
       }
     }
   }
