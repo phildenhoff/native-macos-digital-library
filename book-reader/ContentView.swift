@@ -71,38 +71,74 @@ func genBookCoverImage(imageUrl: URL) -> Image? {
 struct ContentView: View {
   @State private var bookList: [Book] = []
   @State private var sortOrder = [KeyPathComparator(\Book.id)]
+  @State private var selection: Book.ID?
 
   var body: some View {
-    Table(of: Book.self, sortOrder: $sortOrder) {
-      TableColumn("Cover") { book in
-        VStack {
-          let possibleCover = book.loadCover()
-          if let cover = possibleCover {
-            cover
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-          }
+    HSplitView {
+      Table(of: Book.self, selection: $selection, sortOrder: $sortOrder) {
+        TableColumn("Cover") { book in
+          VStack {
+            let possibleCover = book.loadCover()
+            if let cover = possibleCover {
+              cover
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+            }
 
-        }.frame(maxWidth: 180)
+          }.frame(maxWidth: 180)
+        }
+        .width(min: 35, max: 180)
+        .alignment(TableColumnAlignment.center)
+        TableColumn("Title", value: \.sortableTitle) { book in
+          Text(book.title)
+        }
+        TableColumn("Authors", value: \.sortableAuthorList) { book in
+          Text(book.authors())
+        }
+      } rows: {
+        ForEach(bookList, id: \.id) { book in
+          TableRow(book)
+        }
       }
-      .width(min: 35, max: 180)
-      .alignment(TableColumnAlignment.center)
-      TableColumn("Title", value: \.sortableTitle) { book in
-        Text(book.title)
+      .onAppear {
+        initCalibreLibrary()
       }
-      TableColumn("Authors", value: \.sortableAuthorList) { book in
-        Text(book.authors())
+      .onChange(of: sortOrder) { sortOrder in
+        bookList.sort(using: sortOrder)
       }
-    } rows: {
-      ForEach(bookList, id: \.id) { book in
-        TableRow(book)
+      if let selection = selection,
+        let selectedBook = bookList.first(where: { $0.id == selection })
+      {
+        VStack {
+          GeometryReader { geometry in
+            VSplitView {
+              VStack {
+                let possibleCover = selectedBook.loadCover()
+                if let cover = possibleCover {
+                  cover
+                    .resizable()
+                    .interpolation(Image.Interpolation.medium)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 300, alignment: .top)
+                }
+              }.frame(
+                minHeight: geometry.size.height * 1 / 4, idealHeight: geometry.size.height * 2 / 3,
+                maxHeight: .infinity)
+              VStack {
+                Text(selectedBook.title)
+                Text(selectedBook.authors())
+              }
+              .padding()
+              .frame(maxWidth: .infinity, minHeight: geometry.size.height * 1 / 4, maxHeight: .infinity)
+            }
+            .frame(maxWidth: .infinity, maxHeight: geometry.size.height)
+          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(
+          minWidth: 80, idealWidth: .infinity * 2 / 5, maxWidth: .infinity * 2 / 3,
+          alignment: .center)
       }
-    }
-    .onAppear {
-      initCalibreLibrary()
-    }
-    .onChange(of: sortOrder) { sortOrder in
-      bookList.sort(using: sortOrder)
     }
   }
 
