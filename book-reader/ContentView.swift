@@ -70,9 +70,10 @@ func genBookCoverImage(imageUrl: URL) -> Image? {
 
 struct ContentView: View {
   @State private var bookList: [Book] = []
+  @State private var sortOrder = [KeyPathComparator(\Book.id)]
 
   var body: some View {
-    Table(of: Book.self) {
+    Table(of: Book.self, sortOrder: $sortOrder) {
       TableColumn("Cover") { book in
         VStack {
           let possibleCover = book.loadCover()
@@ -86,15 +87,11 @@ struct ContentView: View {
       }
       .width(min: 35, max: 180)
       .alignment(TableColumnAlignment.center)
-      TableColumn("Title", value: \.title)
-      TableColumn("Title (sort order)") { book in
-        Text(book.sortableTitle)
+      TableColumn("Title", value: \.sortableTitle) { book in
+        Text(book.title)
       }
-      TableColumn("Authors") { book in
+      TableColumn("Authors", value: \.sortableAuthorList) { book in
         Text(book.authors())
-      }
-      TableColumn("Authors (sort order)") { book in
-        Text(book.sortableAuthorList)
       }
     } rows: {
       ForEach(bookList, id: \.id) { book in
@@ -103,6 +100,9 @@ struct ContentView: View {
     }
     .onAppear {
       initCalibreLibrary()
+    }
+    .onChange(of: sortOrder) { sortOrder in
+      bookList.sort(using: sortOrder)
     }
   }
 
