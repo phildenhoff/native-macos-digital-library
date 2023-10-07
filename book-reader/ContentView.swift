@@ -124,13 +124,15 @@ struct ContentView: View {
               }.frame(
                 minHeight: geometry.size.height * 1 / 4, idealHeight: geometry.size.height * 2 / 3,
                 maxHeight: .infinity)
-              VStack {
-                  Text(selectedBook.title).font(.largeTitle).frame(alignment: .leading)
-                  Text(selectedBook.authors()).frame(alignment: .leading)
+              VStack(alignment: .leading) {
+                Text(selectedBook.title).font(.largeTitle)
+                Text(selectedBook.authors())
               }
               .padding()
-              .frame(minWidth: geometry.size.width, minHeight: geometry.size.height * 1 / 4, maxHeight: .infinity,
-                     alignment: .topLeading
+              .frame(
+                minWidth: geometry.size.width, minHeight: geometry.size.height * 1 / 4,
+                maxHeight: .infinity,
+                alignment: .topLeading
               )
             }
             .frame(maxWidth: .infinity, maxHeight: geometry.size.height)
