@@ -82,6 +82,7 @@ struct ContentView: View {
             if let cover = possibleCover {
               cover
                 .resizable()
+                .interpolation(Image.Interpolation.high)
                 .aspectRatio(contentMode: .fit)
             }
 
