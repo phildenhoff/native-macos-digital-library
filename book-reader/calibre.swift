@@ -8,7 +8,7 @@ struct CalibreBook: Identifiable {
   let sortableAuthorList: String
   let path: String
   let hasCover: Bool
-  let orderInSeries: Int
+  let orderInSeries: String
 }
 
 struct CalibreAuthor: Identifiable {
@@ -39,7 +39,7 @@ private func calibreBookFromRow(statement: OpaquePointer, columnIndexByName: [St
   {
     let id = sqlite3_column_int(statement, idIndex)
     let hasCover = sqlite3_column_int(statement, hasCoverIndex)
-    let orderInSeries = sqlite3_column_int(statement, seriesIndexIndex)
+    let orderInSeries = sqlite3_column_double(statement, seriesIndexIndex)
 
     let titleString = String(cString: title)
     let titleSortString = String(cString: titleSort)
@@ -54,7 +54,7 @@ private func calibreBookFromRow(statement: OpaquePointer, columnIndexByName: [St
       sortableAuthorList: authorSortString,
       path: pathString,
       hasCover: hasCoverBool,
-      orderInSeries: Int(orderInSeries)
+      orderInSeries: formatDouble(orderInSeries)
     )
   } else {
     return nil
@@ -173,9 +173,9 @@ struct CalibreLibrary: Library {
     }
     return bookResults
   }
-    
-    private func fileUrlForBook(book: CalibreBook) -> URL? {
-      let query = """
+
+  private func fileUrlForBook(book: CalibreBook) -> URL? {
+    let query = """
         SELECT
           id,
           book,
@@ -187,52 +187,79 @@ struct CalibreLibrary: Library {
           book = \(book.id)
         LIMIT 1;
       """
-        let fileNamesAndTypesResults = makeSqlQuery(dbPointer: db!, query: query) {
-            (statement, columnIndexByName) -> URL? in
-            if let nameIndex = columnIndexByName["name"],
-               let formatIndex = columnIndexByName["format"],
-               let name = sqlite3_column_text(statement, nameIndex),
-               let format = sqlite3_column_text(statement, formatIndex) {
-                let nameStr = String(cString: name)
-                let formatStr = String(cString: format)
-                return libraryUrl.appending(component: book.path).appending(component: nameStr).appendingPathExtension(formatStr)
-            } else {
-                return URL?.none
-            }
-        }
-        let firstResult = fileNamesAndTypesResults.first
-        if let firstResult {
-            return firstResult
-        } else {
-            return URL?.none
-        }
+    let fileNamesAndTypesResults = makeSqlQuery(dbPointer: db!, query: query) {
+      (statement, columnIndexByName) -> URL? in
+      if let nameIndex = columnIndexByName["name"],
+        let formatIndex = columnIndexByName["format"],
+        let name = sqlite3_column_text(statement, nameIndex),
+        let format = sqlite3_column_text(statement, formatIndex)
+      {
+        let nameStr = String(cString: name)
+        let formatStr = String(cString: format)
+        return libraryUrl.appending(component: book.path).appending(component: nameStr)
+          .appendingPathExtension(formatStr)
+      } else {
+        return URL?.none
+      }
     }
-    private func comments(bookId: Int) -> String? {
-        let query = """
-          SELECT
-            text
-          FROM
-            comments
-          WHERE
-            book = \(bookId)
-          LIMIT 1;
-        """
-          let commentsResults = makeSqlQuery(dbPointer: db!, query: query) {
-              (statement, columnIndexByName) -> String? in
-              if let textIndex = columnIndexByName["text"],
-                 let text = sqlite3_column_text(statement, textIndex)
-              {
-                  return String(cString: text)
-              } else {
-                  return String?.none
-              }
-          }
-          if let firstResult = commentsResults.first {
-              return firstResult
-          } else {
-              return String?.none
-          }
+    let firstResult = fileNamesAndTypesResults.first
+    if let firstResult {
+      return firstResult
+    } else {
+      return URL?.none
     }
+  }
+  private func comments(bookId: Int) -> String? {
+    let query = """
+        SELECT
+          text
+        FROM
+          comments
+        WHERE
+          book = \(bookId)
+        LIMIT 1;
+      """
+    let commentsResults = makeSqlQuery(dbPointer: db!, query: query) {
+      (statement, columnIndexByName) -> String? in
+      if let textIndex = columnIndexByName["text"],
+        let text = sqlite3_column_text(statement, textIndex)
+      {
+        return String(cString: text)
+      } else {
+        return String?.none
+      }
+    }
+    if let firstResult = commentsResults.first {
+      return firstResult
+    } else {
+      return String?.none
+    }
+  }
+
+  private func seriesName(bookId: Int) -> String? {
+    let query = """
+      SELECT
+          series.name as name,
+          series.sort as sort
+      FROM
+          books_series_link
+          INNER JOIN series ON books_series_link.series = series.id
+      WHERE
+          books_series_link.book = \(bookId)
+      LIMIT 1;
+      """
+    let seriesResults = makeSqlQuery(dbPointer: db!, query: query) {
+      (statement, columnIndexByName) -> String in
+      if let nameIndex = columnIndexByName["name"],
+        let name = sqlite3_column_text(statement, nameIndex)
+      {
+        return String(cString: name)
+      } else {
+        return ""
+      }
+    }
+    return seriesResults.first
+  }
 
   private func authorsForBook(bookId: Int) -> [String] {
     let query = """
@@ -263,6 +290,12 @@ struct CalibreLibrary: Library {
   func listBooks() -> [LibraryBook] {
     return bookList.map { cb in
       let authors = authorsForBook(bookId: cb.id)
+      var sp = SeriesPosition?.none
+
+      if let seriesName = seriesName(bookId: cb.id) {
+        sp = SeriesPosition(seriesName: seriesName, position: cb.orderInSeries)
+      }
+
       return LibraryBook(
         title: cb.title,
         authorList: authors,
@@ -271,7 +304,8 @@ struct CalibreLibrary: Library {
         fileUrl: fileUrlForBook(book: cb),
         sortableTitle: cb.sortableTitle,
         sortableAuthorList: cb.sortableAuthorList,
-        comments: comments(bookId: cb.id)
+        comments: comments(bookId: cb.id),
+        seriesPosition: sp
       )
     }
   }

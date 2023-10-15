@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4ACCD50A2ADBC755006982FD /* Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACCD5092ADBC755006982FD /* Sidebar.swift */; };
+		4ACCD50C2ADBDE7B006982FD /* format.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACCD50B2ADBDE7B006982FD /* format.swift */; };
 		4AE388DA2ACE8E4500F502EE /* book_readerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE388D92ACE8E4500F502EE /* book_readerApp.swift */; };
 		4AE388DC2ACE8E4500F502EE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE388DB2ACE8E4500F502EE /* ContentView.swift */; };
 		4AE388DE2ACE8E4600F502EE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4AE388DD2ACE8E4600F502EE /* Assets.xcassets */; };
@@ -39,6 +40,7 @@
 
 /* Begin PBXFileReference section */
 		4ACCD5092ADBC755006982FD /* Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sidebar.swift; sourceTree = "<group>"; };
+		4ACCD50B2ADBDE7B006982FD /* format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = format.swift; sourceTree = "<group>"; };
 		4AE388D62ACE8E4500F502EE /* book-reader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "book-reader.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AE388D92ACE8E4500F502EE /* book_readerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = book_readerApp.swift; sourceTree = "<group>"; };
 		4AE388DB2ACE8E4500F502EE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 				4AE3890B2ACFA96500F502EE /* calibre.swift */,
 				4AE388D92ACE8E4500F502EE /* book_readerApp.swift */,
 				4AE388DB2ACE8E4500F502EE /* ContentView.swift */,
+				4ACCD50B2ADBDE7B006982FD /* format.swift */,
 				4AE388DD2ACE8E4600F502EE /* Assets.xcassets */,
 				4AE388E22ACE8E4600F502EE /* book_reader.entitlements */,
 				4AE388DF2ACE8E4600F502EE /* Preview Content */,
@@ -280,6 +283,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4ACCD50C2ADBDE7B006982FD /* format.swift in Sources */,
 				4ACCD50A2ADBC755006982FD /* Sidebar.swift in Sources */,
 				4AE388DC2ACE8E4500F502EE /* ContentView.swift in Sources */,
 				4AE3890E2AD096FF00F502EE /* library.swift in Sources */,

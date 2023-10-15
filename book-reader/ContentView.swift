@@ -13,7 +13,7 @@ struct Book: Identifiable {
   let sortableTitle: String
   let authorList: [String]
   let sortableAuthorList: String
-  let series: String?
+  let seriesPosition: SeriesPosition?
   let comments: String?
   let number: Float?
   let fileUrl: URL?
@@ -32,7 +32,7 @@ struct Book: Identifiable {
     sortableTitle = fromLibraryBook.sortableTitle()
     authorList = fromLibraryBook.authorList
     sortableAuthorList = fromLibraryBook.sortableAuthorList()
-    series = String?.none
+    seriesPosition = fromLibraryBook.seriesPosition
     number = Float?.none
     comments = fromLibraryBook.comments
     fileUrl = fromLibraryBook.fileUrl
@@ -45,13 +45,14 @@ struct Book: Identifiable {
 
   init(
     title: String, customTitleSort: String?, authorList: [String], customAuthorSort: String?,
-    series: String?, number: Float?, fileUrl: URL? = URL?.none, cover: Image?, comments: String?
+    seriesPosition: SeriesPosition?, number: Float?, fileUrl: URL? = URL?.none, cover: Image?,
+    comments: String?
   ) {
     self.title = title
     self.sortableTitle = customTitleSort ?? title
     self.authorList = authorList
     self.sortableAuthorList = customAuthorSort ?? authorList.joined(separator: ", ")
-    self.series = series
+    self.seriesPosition = seriesPosition
     self.number = number
     self.fileUrl = fileUrl
     self.cover = cover
@@ -98,6 +99,15 @@ struct ContentView: View {
         }
         TableColumn("Authors", value: \.sortableAuthorList) { book in
           Text(book.authors())
+        }
+        TableColumn("Series") { book in
+          if let seriesInfo = book.seriesPosition {
+            Link(
+              "\(seriesInfo.seriesName) #\(seriesInfo.position)",
+              destination: URL(string: "https://www.goodreads.com/search")!.appending(queryItems: [
+                URLQueryItem(name: "q", value: seriesInfo.seriesName)
+              ]))
+          }
         }
       } rows: {
         ForEach(bookList, id: \.id) { book in
