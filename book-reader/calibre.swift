@@ -207,6 +207,32 @@ struct CalibreLibrary: Library {
             return URL?.none
         }
     }
+    private func comments(bookId: Int) -> String? {
+        let query = """
+          SELECT
+            text
+          FROM
+            comments
+          WHERE
+            book = \(bookId)
+          LIMIT 1;
+        """
+          let commentsResults = makeSqlQuery(dbPointer: db!, query: query) {
+              (statement, columnIndexByName) -> String? in
+              if let textIndex = columnIndexByName["text"],
+                 let text = sqlite3_column_text(statement, textIndex)
+              {
+                  return String(cString: text)
+              } else {
+                  return String?.none
+              }
+          }
+          if let firstResult = commentsResults.first {
+              return firstResult
+          } else {
+              return String?.none
+          }
+    }
 
   private func authorsForBook(bookId: Int) -> [String] {
     let query = """
@@ -244,7 +270,8 @@ struct CalibreLibrary: Library {
         coverImageUrl: libraryUrl.appending(component: cb.path).appending(component: "cover.jpg"),
         fileUrl: fileUrlForBook(book: cb),
         sortableTitle: cb.sortableTitle,
-        sortableAuthorList: cb.sortableAuthorList
+        sortableAuthorList: cb.sortableAuthorList,
+        comments: comments(bookId: cb.id)
       )
     }
   }

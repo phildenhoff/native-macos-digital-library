@@ -14,6 +14,7 @@ struct Book: Identifiable {
   let authorList: [String]
   let sortableAuthorList: String
   let series: String?
+  let comments: String?
   let number: Float?
   let fileUrl: URL?
   var cover: Image?
@@ -33,6 +34,7 @@ struct Book: Identifiable {
     sortableAuthorList = fromLibraryBook.sortableAuthorList()
     series = String?.none
     number = Float?.none
+    comments = fromLibraryBook.comments
     fileUrl = fromLibraryBook.fileUrl
     if let coverImageUrl = fromLibraryBook.coverImageUrl {
       cover = genBookCoverImage(imageUrl: coverImageUrl)
@@ -43,7 +45,7 @@ struct Book: Identifiable {
 
   init(
     title: String, customTitleSort: String?, authorList: [String], customAuthorSort: String?,
-    series: String?, number: Float?, fileUrl: URL? = URL?.none, cover: Image?
+    series: String?, number: Float?, fileUrl: URL? = URL?.none, cover: Image?, comments: String?
   ) {
     self.title = title
     self.sortableTitle = customTitleSort ?? title
@@ -53,6 +55,7 @@ struct Book: Identifiable {
     self.number = number
     self.fileUrl = fileUrl
     self.cover = cover
+    self.comments = comments
   }
 }
 
@@ -135,7 +138,7 @@ struct ContentView: View {
                 } label: {
                   Label("Read", systemImage: "square.and.arrow.up")
                 }
-                Sidebar()
+                Sidebar(html: selectedBook.comments ?? "")
               }
               .padding()
               .frame(

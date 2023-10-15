@@ -32,48 +32,46 @@ extension NSColor {
 
 
 struct Sidebar: View {
-    let htmlContent = """
-    <html>
-        <head>
-            <style>
-                html {
-                  overflow: hidden;
-                }
-
-                body {
-                    font-family: "San Francisco", Arial, sans-serif;
-                    font-size: 16px;
-                    color: #dfdfdf;
-                    background-color: #2b2c2a;
-                    margin: 16px;
-                    cursor: default;
-                    -webkit-user-select: none; /* Safari, Chrome, Edge */
-                    -moz-user-select: none; /* Firefox */
-                    -ms-user-select: none; /* IE 10+ */
-                    user-select: none; /* Standard syntax */
-                }
-
-                strong {
-                    font-weight: bold;
-                }
+    let html: String;
+    let htmlContent: String
     
-                @media (prefers-color-scheme: light) {
-                  body {
-                    color: #242424;
-                    background-color: #edeeed;
-                  }
-                }
-            </style>
-        </head>
-        <body>
-            <p>This is a <strong>bold</strong> paragraph.</p>
-            <p>\(NSColor.textColor.toHex())</p>
-            <p>\(NSColor.labelColor.toHex())</p>
-            <p>\(NSColor.windowBackgroundColor.toHex())</p>
-            <p>\(NSColor.windowFrameTextColor.toHex())</p>
-        </body>
-    </html>
-    """
+    init(html: String) {
+        self.html = html
+        self.htmlContent = """
+            <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: "San Francisco", Arial, sans-serif;
+                            font-size: 16px;
+                            color: #dfdfdf;
+                            background-color: #2b2c2a;
+                            margin: 16px;
+                            cursor: default;
+                            -webkit-user-select: none; /* Safari, Chrome, Edge */
+                            -moz-user-select: none; /* Firefox */
+                            -ms-user-select: none; /* IE 10+ */
+                            user-select: none; /* Standard syntax */
+                        }
+
+                        strong {
+                            font-weight: bold;
+                        }
+            
+                        @media (prefers-color-scheme: light) {
+                          body {
+                            color: #242424;
+                            background-color: #edeeed;
+                          }
+                        }
+                    </style>
+                </head>
+                <body>
+                    \(html)
+                </body>
+            </html>
+            """
+    }
 
     var body: some View {
         WebView(htmlString: htmlContent)

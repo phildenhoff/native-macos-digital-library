@@ -5,6 +5,7 @@ public struct LibraryBook {
   let authorList: [String]
   let coverImageUrl: URL?
   let fileUrl: URL?
+  let comments: String?
 
   // ID of the book within the library
   private let libraryId: String
@@ -13,7 +14,7 @@ public struct LibraryBook {
 
   init(
     title: String, authorList: [String], libraryId: String, coverImageUrl: URL? = URL?.none, fileUrl: URL? = URL?.none,
-    sortableTitle: String? = String?.none, sortableAuthorList: String? = String?.none
+    sortableTitle: String? = String?.none, sortableAuthorList: String? = String?.none, comments: String? = String?.none
   ) {
     self.title = title
     self.authorList = authorList
@@ -22,6 +23,7 @@ public struct LibraryBook {
     self.fileUrl = fileUrl
     self.customSortTitle = sortableTitle
     self.customSortAuthorList = sortableAuthorList
+    self.comments = comments
   }
 
   func sortableTitle() -> String {
