@@ -15,7 +15,7 @@ struct Book: Identifiable {
   let sortableAuthorList: String
   let series: String?
   let number: Float?
-  let path: String?
+  let fileUrl: URL?
   var cover: Image?
   var id = UUID()
 
@@ -33,7 +33,7 @@ struct Book: Identifiable {
     sortableAuthorList = fromLibraryBook.sortableAuthorList()
     series = String?.none
     number = Float?.none
-    path = String?.none
+    fileUrl = fromLibraryBook.fileUrl
     if let coverImageUrl = fromLibraryBook.coverImageUrl {
       cover = genBookCoverImage(imageUrl: coverImageUrl)
     } else {
@@ -43,7 +43,7 @@ struct Book: Identifiable {
 
   init(
     title: String, customTitleSort: String?, authorList: [String], customAuthorSort: String?,
-    series: String?, number: Float?, path: String?, cover: Image?
+    series: String?, number: Float?, fileUrl: URL? = URL?.none, cover: Image?
   ) {
     self.title = title
     self.sortableTitle = customTitleSort ?? title
@@ -51,7 +51,7 @@ struct Book: Identifiable {
     self.sortableAuthorList = customAuthorSort ?? authorList.joined(separator: ", ")
     self.series = series
     self.number = number
-    self.path = path
+    self.fileUrl = fileUrl
     self.cover = cover
   }
 }
@@ -128,6 +128,13 @@ struct ContentView: View {
               VStack(alignment: .leading) {
                 Text(selectedBook.title).font(.largeTitle)
                 Text(selectedBook.authors())
+                Button {
+                  if let url = selectedBook.fileUrl {
+                    NSWorkspace.shared.open(url)
+                  }
+                } label: {
+                  Label("Read", systemImage: "square.and.arrow.up")
+                }
               }
               .padding()
               .frame(

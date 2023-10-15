@@ -173,6 +173,40 @@ struct CalibreLibrary: Library {
     }
     return bookResults
   }
+    
+    private func fileUrlForBook(book: CalibreBook) -> URL? {
+      let query = """
+        SELECT
+          id,
+          book,
+          format,
+          name
+        FROM
+          data
+        WHERE
+          book = \(book.id)
+        LIMIT 1;
+      """
+        let fileNamesAndTypesResults = makeSqlQuery(dbPointer: db!, query: query) {
+            (statement, columnIndexByName) -> URL? in
+            if let nameIndex = columnIndexByName["name"],
+               let formatIndex = columnIndexByName["format"],
+               let name = sqlite3_column_text(statement, nameIndex),
+               let format = sqlite3_column_text(statement, formatIndex) {
+                let nameStr = String(cString: name)
+                let formatStr = String(cString: format)
+                return libraryUrl.appending(component: book.path).appending(component: nameStr).appendingPathExtension(formatStr)
+            } else {
+                return URL?.none
+            }
+        }
+        let firstResult = fileNamesAndTypesResults.first
+        if let firstResult {
+            return firstResult
+        } else {
+            return URL?.none
+        }
+    }
 
   private func authorsForBook(bookId: Int) -> [String] {
     let query = """
@@ -208,6 +242,7 @@ struct CalibreLibrary: Library {
         authorList: authors,
         libraryId: String(cb.id),
         coverImageUrl: libraryUrl.appending(component: cb.path).appending(component: "cover.jpg"),
+        fileUrl: fileUrlForBook(book: cb),
         sortableTitle: cb.sortableTitle,
         sortableAuthorList: cb.sortableAuthorList
       )
