@@ -135,6 +135,7 @@ struct ContentView: View {
                 } label: {
                   Label("Read", systemImage: "square.and.arrow.up")
                 }
+                Sidebar()
               }
               .padding()
               .frame(
